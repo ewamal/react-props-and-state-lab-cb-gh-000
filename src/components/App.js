@@ -1,18 +1,42 @@
-import React from 'react'
+import React from "react";
 
-import Filters from './Filters'
-import PetBrowser from './PetBrowser'
+import Filters from "./Filters";
+import PetBrowser from "./PetBrowser";
 
 class App extends React.Component {
   constructor() {
-    super()
+    super();
 
     this.state = {
       pets: [],
       filters: {
-        type: 'all'
+        type: "all"
       }
-    }
+    };
+  }
+
+  handleClick = () => {
+    const API = "/api/pets";
+    const QUERY =
+      this.state.filters.type === "all"
+        ? ""
+        : `?type=${this.state.filters.type}`;
+
+    fetch(API + QUERY)
+      .then(response => response.json())
+      .then(data => this.setState({ pets: data }));
+  };
+
+  handleChange = type => {
+    this.setState({ filters: { type } })
+  };
+
+  handleAdoption = (id) => {
+    const{pets} = this.state;
+    const pet = pets.findIndex((pet) => pet.id === id);
+    this.setState({pets: [
+      ...pets.slice(0,pet), {...pets[pet], isAdopted:true}, ...pets.slice(pet)
+    ]})
   }
 
   render() {
@@ -24,16 +48,22 @@ class App extends React.Component {
         <div className="ui container">
           <div className="ui grid">
             <div className="four wide column">
-              <Filters />
+              <Filters
+                type={this.state.type}
+                onChangeType={this.handleChange}
+                onFindPetsClick={this.handleClick}
+              />
             </div>
             <div className="twelve wide column">
-              <PetBrowser />
+              <PetBrowser pets={this.state.pets}
+               onAdoptPet={this.handleAdoption}
+              />
             </div>
           </div>
         </div>
       </div>
-    )
+    );
   }
 }
 
-export default App
+export default App;
